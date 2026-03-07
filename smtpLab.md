@@ -1,13 +1,12 @@
-1. Improved SMTP Java Code (Protocol Structured)
+# 1. Improved SMTP Java Code (Protocol Structured)
 
 This version:
 
-separates send / receive
+* separates **send / receive**
+* checks **server response codes**
+* clearly matches **RFC 5321 SMTP flow**
 
-checks server response codes
-
-clearly matches RFC 5321 SMTP flow
-
+```java
 import java.io.*;
 import java.util.Base64;
 import javax.net.ssl.*;
@@ -99,192 +98,299 @@ public class SMTPClient {
         client.sendEmail(from, password, to);
     }
 }
-2. Now Let's Map the Code to RFC 5321
+```
 
-SMTP is defined in RFC 5321.
+---
 
-The protocol works in 3 major phases.
+# 2. Now Let's Map the Code to RFC 5321
 
+SMTP is defined in **RFC 5321**.
+
+The protocol works in **3 major phases**.
+
+```
 1️⃣ Connection Setup
 2️⃣ Mail Transaction
 3️⃣ Session Termination
+```
 
 Your code follows exactly this structure.
 
-3. Phase 1 — Connection Setup
-Code
+---
+
+# 3. Phase 1 — Connection Setup
+
+### Code
+
+```java
 SSLSocket socket = SSLSocketFactory.getDefault().createSocket(server, port);
+```
 
 This opens TCP connection.
 
+```
 Client → smtp.gmail.com:465
+```
 
 Server responds automatically:
 
+```
 220 smtp.gmail.com ESMTP ready
+```
 
 RFC rule:
 
+```
 220 = Service Ready
+```
 
-This greeting happens before the client sends anything.
+This greeting happens **before the client sends anything**.
 
-4. EHLO Command
-Code
+---
+
+# 4. EHLO Command
+
+### Code
+
+```java
 sendCommand("EHLO client.example.com");
+```
 
-EHLO = Extended Hello
+EHLO = **Extended Hello**
 
 Purpose:
 
+```
 Client introduces itself
+```
 
 Server returns capabilities like:
 
+```
 250-AUTH LOGIN
 250-SIZE
 250-STARTTLS
+```
 
 Meaning:
 
+```
 Server supports authentication
 Server supports TLS
 Server supports message size limits
-5. Authentication Phase
+```
+
+---
+
+# 5. Authentication Phase
 
 Your code:
 
+```
 AUTH LOGIN
+```
 
 Server replies:
 
+```
 334 VXNlcm5hbWU6
+```
 
 That means:
 
+```
 Send username
+```
 
 Why?
 
-Because SMTP sends credentials Base64 encoded.
+Because SMTP sends credentials **Base64 encoded**.
 
 Example:
 
+```
 user@gmail.com
 ↓
 dXNlckBnbWFpbC5jb20=
+```
 
 Code:
 
+```java
 Base64.getEncoder().encodeToString(from.getBytes())
+```
 
 Then password same way.
 
 Server returns:
 
+```
 235 Authentication successful
-6. Mail Transaction Phase
+```
+
+---
+
+# 6. Mail Transaction Phase
 
 Defined in RFC as:
 
+```
 MAIL FROM
 RCPT TO
 DATA
+```
 
-This is the core SMTP transaction.
+This is the **core SMTP transaction**.
 
-MAIL FROM
+---
+
+## MAIL FROM
 
 Code:
 
+```java
 sendCommand("MAIL FROM:<sender@gmail.com>");
+```
 
 Purpose:
 
+```
 Defines envelope sender
+```
 
 Server response:
 
+```
 250 OK
-RCPT TO
+```
+
+---
+
+## RCPT TO
 
 Code:
 
+```java
 sendCommand("RCPT TO:<receiver@gmail.com>");
+```
 
 Purpose:
 
+```
 Defines recipient
+```
 
 Multiple recipients allowed:
 
+```
 RCPT TO:<a@email>
 RCPT TO:<b@email>
 RCPT TO:<c@email>
-7. DATA Command
+```
+
+---
+
+# 7. DATA Command
 
 Code:
 
+```java
 sendCommand("DATA");
+```
 
 Server replies:
 
+```
 354 Start mail input
+```
 
 Meaning:
 
+```
 Server ready to receive message
-8. Email Format (RFC 5322)
+```
+
+---
+
+# 8. Email Format (RFC 5322)
 
 Your code sends:
 
+```
 From:
 To:
 Subject:
+```
 
 Example:
 
+```
 From: alice@gmail.com
 To: bob@gmail.com
 Subject: Test Mail
+```
 
-Then blank line.
+Then **blank line**.
 
 Then body:
 
+```
 Hello world
-9. Message Termination
+```
+
+---
+
+# 9. Message Termination
 
 SMTP requires a special sequence:
 
+```
 <CRLF>.<CRLF>
+```
 
 Meaning:
 
+```
 newline
 .
 newline
+```
 
 Code:
 
+```java
 sendCommand(".");
+```
 
 Server response:
 
+```
 250 Message accepted
-10. Closing Session
+```
+
+---
+
+# 10. Closing Session
 
 Code:
 
+```java
 sendCommand("QUIT");
+```
 
 Server response:
 
+```
 221 Bye
+```
 
 Connection ends.
 
-11. Visual Protocol Flow
+---
+
+# 11. Visual Protocol Flow
+
+```
 Client                          Server
 ------                          ------
 
@@ -319,33 +425,23 @@ message ----------------------->
 
 QUIT -------------------------->
                                221 bye
-12. Why This is Valuable for You
+```
+
+---
+
+# 12. Why This is Valuable for You
 
 Since you are learning:
 
-networking
-
-Wireshark
-
-protocol analysis
+* **networking**
+* **Wireshark**
+* **protocol analysis**
 
 This code teaches:
 
+```
 raw SMTP protocol
 socket programming
 RFC implementation
+```
 
-Which is how real protocol engineers work.
-
-13. If you want, next I can teach you something VERY powerful:
-How to capture this exact SMTP session in Wireshark
-
-You will literally see:
-
-EHLO
-AUTH LOGIN
-MAIL FROM
-RCPT TO
-DATA
-
-inside packets.
