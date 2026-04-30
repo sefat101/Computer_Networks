@@ -1,4 +1,4 @@
-Alright — I’ll walk you through this like a **lab viva + exam explanation**, not just surface-level. You’ll understand **how everything actually works under the hood**.
+
 
 ---
 
