@@ -227,3 +227,46 @@ sudo ufw allow 7777
 * Resolve firewall issues
 
 ---
+
+
+
+
+
+
+
+SUMMARY : 
+
+1. (b) ipconfig -> windows
+	ifconfig -> ubuntu 
+	
+	
+(c) In Linux ->
+
+	i. 1st pc -> 
+		$sudo ip addr add 192.168.0.1/24 dev [ethernet]
+		$sudo ip link set [ethernet] up 
+		
+		check ip ->
+			$ip addr show [ethernet]
+	ii.2nd pc ->
+		$sudo ip addr add 192.168.0.2/24 dev [ethernet]
+		$sudo ip link set [ethernet] up 
+	iii. ping 192.168.0.2 ->from pc 1
+	
+    In windows -> 
+    
+    	i.1st pc -> 
+    		$netsh interface ip set address name="Ethernet" static 192.168.0.1 255.255.255.0
+    	ii. 2nd pc ->
+    		$netsh interface ip set address name+"Ethernet" static 192.168.0.2 255.255.255.0
+    		
+    	(*) if "Ethernet" name doesnt work ->
+    		$netsh interface show interface 
+    		
+	(*)if fails ->
+		i.turn off firewall ->
+		    in windows -> netsh advfirewall set allprofiles state off
+		    in ubuntu -> sudo ufw disable 
+		    		 sudo ufw allow proto icmp -> if ping fails 
+		    		 sudo ufw allow 5000 -> To allow java server port (example port 5000)
+
